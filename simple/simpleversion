@@ -1,4 +1,4 @@
-Yolov5s 모델 경량화 및 속도 개선 (2022.03.31 게시) - https://github.com/JinSeoung-Oh/career-archive/new/main/simple
+Yolov5s 모델 경량화 및 속도 개선 (2022.03.31 게시) - https://github.com/JinSeoung-Oh/career-archive/blob/main/detail/Yolov5s%20%EB%AA%A8%EB%8D%B8%20%EA%B2%BD%EB%9F%89%ED%99%94%20%EB%B0%8F%20%EC%86%8D%EB%8F%84%20%EA%B0%9C%EC%84%A0%20(2022.03.31%20%EA%B2%8C%EC%8B%9C)
  - Yolov5s 모델을 .onnx 형식으로 변환하여 CPU/GPU 환경 성능 비교. 단일 이미지에서는 ONNX가 빠르지만, 대규모 데이터셋에서는 pt+GPU 모델이 가장 우수함을 확인.
  - SparseML 기반 Pruning + Quantization을 적용했으나 DeepSparse 엔진이 리눅스 전용이라 실용성 한계. 결과적으로 최적화된 원본 Yolov5s GPU 모델이 가장 적합하다는 결론 도출.
 --------------------------------------------------------------------------------------------------------------
