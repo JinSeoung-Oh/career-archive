@@ -1,0 +1,30 @@
+프로젝트명: Yolov5 + DeepSORT 성능 테스트
+기간/게시일: 2022년 5월
+
+1. 배경
+   -1.  SORT 알고리즘은 Kalman filter를 이용해 tracking-by-detection을 수행하며, 빠른 속도와 간단한 구조가 장점.
+   -2. 그러나 **occlusion(가림 현상)**과 ID switching(객체 재등장 시 ID 변경) 문제가 발생하는 한계가 있음.
+   -3. 이를 보완하기 위해 DeepSORT는 Deep Appearance Descriptor를 이용한 Re-identification(ReID) 모델과 Matching Cascade 로직을 적용.
+
+2. DeepSORT 메커니즘
+   -1. Matching Cascade + IOU Matching을 통해 객체를 3가지 상태로 분류:
+       - Matched Tracks: 추적 중인 객체 (Kalman filter로 업데이트).
+       - Unmatched Detection: 새롭게 등장한 객체.
+       - Unmatched Tracks: 일정 기간 대기 후 재발견 시 동일 ID로 복구.
+   -2. 장점: 실시간 추적 가능, 높은 정확도, ID switching 문제 개선.
+   -3. 단점: CPU+GPU 모두 필요, 복잡한 배경·어두운 환경에서 성능 저하.
+
+3. 실험 세부
+   -1. Object detector: Yolov5.
+   -2. 실험 데이터: “Now United – Summer In The City (Official Video)” 영상.
+   -3. 관찰 결과:
+       - Occlusion 문제는 드물게 발생.
+       - Detector의 class misclassification 발생.
+       - 객체가 화면을 이탈 후 재등장할 때 ID switching 발생.
+       - 원인: t, t+1, t+2 시점 프레임이 너무 달라서 Detector가 서로 다른 객체로 인식.
+       - 해결책: 동일 환경(zoom 등 변동 없는 경우)에서 Unmatched Tracks의 대기 시간을 조정하면 동일 ID 유지 가능.
+
+4. 결론
+   - DeepSORT는 SORT의 한계(occlusion, ID switching)를 상당히 개선하면서도 실시간 성능을 제공.
+   - 다만, Detector 성능과 환경(배경 복잡성, 조도)에 따라 성능이 저하될 수 있음.
+   - 본 실험을 통해 객체 추적 파이프라인(Yolov5 + DeepSORT)의 적용 가능성과 한계를 검증.
