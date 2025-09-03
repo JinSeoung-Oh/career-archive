@@ -1,3 +1,9 @@
+OCR 성능 향상 연구 – EasyOCR 중심 (2022.03.31 게시)
+- EasyOCR 기반 한글 OCR의 한계 분석 및 성능 개선 연구 수행.
+- Pre-processing: GAN 기반 폰트 변환, Super Resolution, 이미지 향상 기법 실험.
+- Post-processing: OCR error correction 연구 (BERT embedding, beam search 기반 correction model 설계).
+- 결과적으로 폰트 변환 및 SR은 한글 텍스트에서 성능 향상 효과가 제한적이었으며, 한국어 특유의 문맥·의도 의존성으로 correction 모델 구축의 어려움 확인.
+-----------------------------------------------------------------------------------------------------------
 Yolov5 + DeepSORT 성능 테스트 (2022.05 게시)
 - Multi-object tracking(MOT) 기법인 SORT의 한계(occlusion, ID switching)를 개선한 DeepSORT를 Yolov5와 결합해 실험.
 - Object detection은 Yolov5, 추적에는 DeepSORT 사용
