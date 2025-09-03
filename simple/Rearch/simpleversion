@@ -1,0 +1,5 @@
+Yolov5 + DeepSORT 성능 테스트 (2022.05 게시)
+- Multi-object tracking(MOT) 기법인 SORT의 한계(occlusion, ID switching)를 개선한 DeepSORT를 Yolov5와 결합해 실험.
+- Kalman filter 기반 예측, IOU Matching, Matching Cascade, Re-identification(Deep Appearance Descriptor) 적용.
+- 실제 영상 실험 결과: 실시간 추적 성능 확보, ID switching 일부 발생 확인, Detector의 class 오분류 문제 확인.
+-----------------------------------------------------------------------------------------------------------
