@@ -1,0 +1,40 @@
+프로젝트명: OCR 성능 향상 연구 (EasyOCR vs 대안 모델 비교 및 최적화)
+기간/게시일: 2022년 3월 31일
+
+1. 배경
+   -1. OCR(Optical Character Recognition)은 인쇄 텍스트를 디지털 텍스트로 변환하는 작업으로, 딥러닝 발전과 함께 정확도가 크게 향상됨.
+   -2. 그러나 입력 이미지의 품질(텍스트 선명도, 배경 복잡도)에 따라 인식 결과가 크게 달라짐.
+   -3. 특히 EasyOCR은 Detection 단계는 양호하지만 Recognition 단계에서 matching 오류가 발생. → 예: “계 ↔ 게”, “들 ↔ 늘”, “없 ↔ 었”
+
+2. 접근 방법
+   -1. Pre-processing 기반 성능 향상
+       -1) GAN 기반 Font Style Transformation
+           - Text font를 OCR 친화적으로 변환하여 인식률 향상 시도.
+           - 하지만 한글 폰트 변환은 안정적이지 않았고, 배경이 있는 간판 이미지에서는 실패율 높음.
+           - Crop → Font 변환 방식은 구현 가능하나 과정이 복잡해 실험 중단.
+   -2. Super Resolution (SR) 적용
+       - Bicubic, SSResNet, SRGAN 모델을 활용하여 텍스트 이미지의 해상도 향상.
+       - 일반 이미지에는 효과적이었으나, 한글 텍스트 이미지에서는 성능 향상이 거의 없음.
+       - Resolution 향상만으로는 획 손실·흐림 문제 해결 불가.
+
+2. Post-processing 기반 성능 향상
+   -1. OCR Error Correction Model 설계
+       -1) Error detection + Beam search 기반 correction 구조 설계.
+       -2) 영어/중국어에는 BEAR 등 공개 모델 존재, 한국어는 희소 언어로 공개 모델 부재.
+       -3) 한국어 교정 API(HanSpell, symspellpy_ko 등) 적용했으나 성능 악화.
+       -4) KakaoBrain Pororo API도 한국어 교정 기능 미지원.
+   -2. 문제 분석
+       -1) 한국어는 철자 한 글자의 작은 차이(“있” vs “없”)로 의미가 완전히 바뀌며, 문법적으로는 오류가 없어 correction이 어렵다.
+       -2) 문맥 + 화자의 의도 파악까지 필요해 영어 대비 correction 난이도가 훨씬 높음.
+
+3. 결과
+   -1. Pre-processing: GAN·SR 모두 한국어 OCR 개선에는 효과가 제한적임을 확인.
+   -2. Post-processing: 한국어 전용 error correction 모델 부재, 데이터셋 부족 문제로 구현 난항.
+   결론: 한글 OCR 오류는 “글자 선명도 문제 + 언어적 특성”이 복합적으로 작용. 한국어 OCR correction 모델 구축에는 추가 데이터 확보와 seq2seq 기반 학습이 필수적임.
+
+4. 결론
+   -1. 본 연구를 통해 EasyOCR 기반 한글 OCR의 한계와 개선 가능성을 분석.
+   -2. Pre-processing 방식은 단독으로는 효과 제한적.
+   -3. Post-processing correction 모델은 한국어 특수성(철자 단위 의미 전환, 의도 의존성) 때문에 구축 난이도가 매우 높음.
+
+5. 향후 방향: 한국어 데이터셋 확보, BERT 기반 embedding + seq2seq beam search correction 모델 구축 필요.
