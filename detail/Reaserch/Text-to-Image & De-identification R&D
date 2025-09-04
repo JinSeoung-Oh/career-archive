@@ -1,0 +1,62 @@
+프로젝트명: Text-to-Image 모델 테스트 & DreamBooth & De-identification(얼굴)
+업데이트일: 2023-08-25 / 2023-09-21 / 2023-10-11
+
+1) 모델 테스트 스코프 (2023-08-25)
+   -1. Imagen-pytorch
+       - T5-XXL 텍스트 인코더 + 64→256→1024 cascaded diffusion.
+       - 공개된 공식 weight 부재. classifier-free guidance, dynamic/static thresholding 등 구조 분석만 수행.
+   -2. DALL·E 2(PyTorch/LAION)
+       - unCLIP: prior(CLIP image embedding 생성) + decoder(diffusion) 2단계.
+       - LAION 릴리즈는 코드/weight 버전 불일치로 결과 품질 불안정(1.41.1 코드 ↔ 1.1.0 weight).
+   -3. Stable Diffusion v2 (latent diffusion)
+       - CLIP text encoder + U-Net(Scheduler) + VAE 2-stage.
+       - 장점: 생성 품질/효율 우수. 단점: 구도 유사성 반복, negative prompt 일부 미반영, 영어 중심, 단문 위주.
+
+2) DreamBooth + SD v2 (2023-09-21)
+   -1. 학습/추론 이슈
+       - 과적합 전제(2–3장 LoRA)일 때 타겟 특징 재현 용이.
+       - 프롬프트 순서에 극도로 민감(예: men의 위치에 따라 성별 결과가 바뀜).
+       - 동일 checkpoint·prompt라도 비결정성 → torch.manual_seed()로 고정 필요(권장 seed 해상도 기준 768×768).
+       - 얼굴은 3k–9k step에서 안정, 의상 속성은 15k+ 필요(얼굴 열화 위험).
+   -2. 리소스/안정화
+       - 1회 추론 후 CUDA OOM → 양자화로 해결.
+       - 체크포인트 구간별 포즈/의상 재현 상호 트레이드오프 → 실무에선 자동 스윕·평가 루프 필요.
+
+3) 비식별화(De-identification) 실험 (2023-10-11)
+   -1. Try 1: SD v2 단독
+       - 다인 장면·한국어 프롬프트에서 편향/혼입(여성=중국, 남성=일본 느낌) 및 속성 왜곡. 배경 동시 생성으로 캐스팅 불일치.
+   -2. Try 2: DreamBooth 결합
+       - 특정 포즈/구도 과적합 → 장면 내 모든 인물이 동일 포즈/중앙 배치. 배경 동시 생성 및 스케일 미스매치로 캐스팅 곤란.
+   -3. Try 3: SD-Depth
+       - 포즈/위치 조건화로 유사 배치 가능하나 배경도 함께 생성.
+       - Workflow: YOLOv8(사람) 크롭 → SD-Depth 생성 → 원본 캐스팅. 여전히 박스 내 배경 혼입·스케일 차이(±10px)로 경계 겹침.
+   -4. Try 4: SD-Depth + YOLOv8-face(커스텀)
+       - 얼굴만 교체를 지향. 타이트 박스로 정합 오차·경계 아티팩트.
+       - 현재는 **사람 검출(YOLOv8)**과 **얼굴 검출(YOLOv8-face)**이 별도 가상환경 필요(의존성 충돌).
+       - 대안 검토: 하나의 프레임워크로 통합 or 분할 후 카메라 파라미터 정합/미세 워핑.
+
+4) 제안 워크플로(실무형 얼굴 비식별화 파이프라인 초안)
+   -1. 탐지·분할
+       - 사람(YOLOv8) + 얼굴/헤어/목 세그먼트(BiSeNet/ModNet 등) ⇒ 정밀 마스크 확보.
+   -2. 얼굴 대치 생성
+       - Text-to-image 대신 face diffusion inpainting(SD-inpaint / ControlNet-Face/Depth) 채택.
+       - 속성 제어 토큰(성별/연령/조명/시선) + style-neutral 프롬프트 프리셋.
+   -3. 정합·합성
+       - 원본 랜드마크(68/468) → piecewise affine / Thin-Plate Spline 워핑.
+       - 색/노이즈/샤프니스 매칭(Reinhard, grain, USM)으로 경계 소거.
+   -4. 검증
+       - re-ID/FaceNet 유사도 하한선 설정(‘원본과 충분히 다름’) + NSFW/편향 필터.
+   -5. 운영
+       - 프롬프트 템플릿·체크포인트·seed 그리드 서치 자동화 + CER/WER 등 2차 지표(문서라면).
+
+5) 무엇을 알 수 있었는가 (Insights)
+   -1. T2I ≠ 실무 비식별화
+       - 일반 T2I는 배경 동시 생성·스케일 변동·속성 혼입으로 실제 이미지 교체에 부적합. 조건부 inpainting + 정합이 핵심.
+   -2. 프롬프트·체크포인트 민감성
+       - 결과가 order/seed/step에 비선형적으로 반응. 자동 스윕과 평가 기준의 수치화가 없으면 재현성 부족.
+   -3. 편향·언어 이슈
+       - 한국어/동양인 조건에서 인종·성별 편향과 시각적 스테레오타입 발생. 안전 프롬프트 프리셋과 결과 필터가 필수.
+   -4. 스케일/정합 문제는 전처리 문제
+       - 탐지 박스/세그먼트의 정밀도, 랜드마크 기반 기하 정합이 품질을 좌우. 생성모델 성능보다 정합 파이프라인이 더 중요.
+   -5. DreamBooth는 도메인 한정 전이
+       - 포즈/구도 과적합 특성상 다중 인물·다양한 배치에는 적합하지 않음. 필요 시 소량 LoRA + 컨트롤넷 조합 고려.
