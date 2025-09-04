@@ -1,0 +1,41 @@
+프로젝트명: Image Variations with Stable Diffusion (unCLIP)
+업데이트일: 2023-08-25 / 2023-10-11
+
+1) 개요
+   - 목적: 하나의 입력 이미지를 기반으로 유사한 스타일·패턴을 가진 변형 이미지 자동 생성.
+   - 모델 기반: Stable Diffusion v2 + unCLIP joint embedding.
+   - 원리: CLIP 기반 joint embedding space를 이용해 language-guided manipulation 지원 → 입력 이미지와 연계된 변형 이미지 생성.
+
+2) 구현/실험
+   - GitHub 레포: Stability-AI/stablediffusion, UNCLIP 기능 문서 기반 테스트.
+   - 기본 Streamlit 구현 → 로컬 모듈 커스텀 완료 (웹 환경 외에도 실행 가능).
+   - 테스트 환경: 기본 prompt/negative prompt 값 사용.
+   - 결과 관찰:
+     원본 이미지 + Stable Diffusion 생성본 + Variations 결과 비교.
+     원본 대비 변형 결과는 유사 스타일 유지 성공.
+     단, 생성된 이미지 구도가 일정하게 유지되어 다양성이 낮음.
+
+3) 커스텀/활용 가능성
+   - 한국어 번역 모델과 결합 시 한국어 입력 → 변형 이미지 생성 가능성 확인.
+   - 프롬프트 엔지니어링 및 latent space sampling 기법 개선으로 다양성·창의성 향상 필요.
+
+4) 무엇을 알 수 있었는가 (Insights)
+   -1. unCLIP 구조는 “원본 유지 + 변형”에는 강점
+       - 원본과 유사한 특징을 가진 이미지를 안정적으로 생성.
+       - 데이터 증강·유사 이미지 생성에 적합.
+   -2. 구도 다양성 부족 문제
+       - Variations 결과가 원본 구도에 지나치게 고정됨.
+       - Prompt 변경, latent sampling 기법 확장이 필요.
+   -3. 커스터마이징 중요성
+       - Streamlit 기반 기본 코드 → 로컬 모듈화로 활용성 확대.
+       - prompt/negative prompt를 통해 제어 가능성 실험.
+   -4. 한국어 적용 가능성
+       - 번역 모델 + SD Variations 결합 시 한국어 기반 이미지 변형 가능.
+       - 다국어 워크플로우 확장의 기초 가능성 확인.
+
+5) 제안 워크플로 (실무 적용)
+   -1. 입력 이미지 → CLIP 기반 embedding 추출.
+   -2. Stable Diffusion Variations → 여러 latent 샘플링 전략(DDIM/DPMSolver++ 등) 적용.
+   -3. Prompt & negative prompt를 통해 다양성 확보.
+   -4. 결과 이미지 → 품질 평가(구도 다양성/유사성 점수화).
+   -5. 한국어 파이프라인 → 번역 모델 연계.
