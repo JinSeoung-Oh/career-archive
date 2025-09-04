@@ -1,0 +1,27 @@
+12월 30, 2022에 업데이트
+
+1. R&D 목표
+   - 작업자들이 3d 데이터를 이용한 bounding box와 polygon 작업을 해야할 시
+   - assistant 역할을 할 수 있는 detection model, segmentation model을 개발하려고 함 
+   - LiDAR 데이터 기준으로 다양한 파일 형식으로 들어와도 pcd로 변환 작업을 진행 후 inference 할 수 있도록 함 
+   - detection model 과 segmentation model은 각각 실내 / 실외로 구분하여서 진행상황을 파악하려고함 
+
+2. R&D 배경  
+   - 3D 라벨링은 단가가 높기 때문에 프리라벨링으로 진행하고 싶어하는 니즈가 있음 
+   - 따라서 모델을 사용하여 라벨링을 진행하려는 시도는 계속 되어야 함 
+   - 사람이 식별하기 어려운 물체에 대한 가이드 용도 (사각지대에 대한 가이드)
+   - 대략적인 가이드 라인을 제공함으로써 좀 더 작업자들이 편하게 작업할 수 있다. 
+
+3. R&D 방향성 
+   -1. detection model - outdoor 
+       - 선택 가능한 객체 :  자동차, 사람, 자전거 탄 사람
+       - 자율주행에서 가장 필요한 기능 
+       - 주 고객층 : 자율 주행에 대한 데이터 수집하는 고객 
+   -2. segmentation model - outdoor 
+       - 선택 가능한 객체 : 자동차, 자전거,오토바이, 버스, 트럭, 사람, 길, 주차된 차, 건물, 팬스, 식물, 나무, 표지판
+       - 자율주행에서 사용되는 경우가 있음 
+   -3. detection model - indoor
+       - 선택 가능한 객체 : 창문, 테이블, 의자, 소파, bookcase, board
+   -4. segmentation model - indoor
+       - 선택 가능한 객체 : 천장, 바닥, 벽, 기둥, 창문, 문, 테이블, 의자, bookcase, 소파, board
+       - 실내 로봇이 서빙 등의 다양한 업무를 하기 위해 필요한 작업 
