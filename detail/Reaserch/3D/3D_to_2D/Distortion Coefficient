@@ -1,0 +1,96 @@
+# Distortion Coefficient 정리
+
+## 1. Distortion(렌즈 왜곡) 개요
+실제 카메라는 이상적인 핀홀 모델과 달리 렌즈 특성으로 인해 이미지에 왜곡이 발생합니다.  
+이때 보정에 사용되는 값이 **distortion coefficients** 입니다. OpenCV나 KITTI 등의 캘리브레이션 파일에서 흔히 주어집니다.
+
+## 2. Distortion 종류와 계수
+
+### (A) Radial Distortion (방사 왜곡)
+- 이미지 중심에서 멀어질수록 직선이 휘어지는 현상
+- 수식:
+  x_radial=x′⋅(1+k_1r^2+k_2r^4+k_3r^6)
+  𝑦_radial=𝑦′⋅(1+k_1r^2+k_2r^4+k_3r^6)
+- 계수: `k1, k2, k3` (필요 시 `k4, k5, k6` 까지 확장)
+
+### (B) Tangential Distortion (접선 왜곡)
+- 렌즈와 이미지 센서가 완벽히 평행하지 않아 발생
+- 수식:
+  x_tan=2p_1x′y′+p_2(r^2+2x′^2)
+  𝑦_tan=𝑝_1(𝑟^2+2𝑦′^2)+2𝑝_2𝑥′𝑦′
+- 계수: `p1, p2`
+
+### (C) 기타 왜곡 (특수한 경우만 사용)
+- Thin prism distortion: `s1, s2, s3, s4`
+- Tilted sensor distortion: `τx, τy`
+
+### (D) 최종 왜곡 적용 좌표
+Radial + Tangential 왜곡을 모두 반영한 좌표:
+x_d=x_radial+x_tan
+𝑦_𝑑=𝑦_radial+𝑦_tan
+---
+
+## 3. OpenCV Distortion Coefficient 형태
+- 기본 (5개): `[k1, k2, p1, p2, k3]`
+- 확장 (8~14개까지 가능): `[k1, k2, p1, p2, k3, k4, k5, k6, s1, s2, s3, s4, τx, τy]`
+
+## 4. 왜곡 보정 처리 방법
+
+### (A) 수식 적용 방식
+1. 3D → 2D 투영 시:
+   - 먼저 **정규화 좌표 (x', y') = (X'/Z', Y'/Z')** 계산
+   - radial + tangential 보정 적용 → 왜곡 좌표 (xd, yd)
+   - 최종적으로 intrinsic 곱해서 픽셀 (u,v) 얻음
+
+2. 2D → 3D 역투영 시:
+   - 주어진 픽셀 (u,v)을 intrinsic 역변환해 정규화 좌표 (x',y') 얻음
+   - iterative하게 distortion 보정(언디스토션) 수행
+   - `cv2.undistortPoints` 함수가 내부적으로 이를 처리
+
+### (B) OpenCV 함수 사용
+- 왜곡 보정된 이미지 생성
+  import cv2
+  undist = cv2.undistort(img, K, dist)  # dist: [k1,k2,p1,p2,k3,...]
+
+- 포인트 언디스토션 (픽셀 → 보정된 정규화 좌표)
+  import cv2
+  import numpy as np
+
+  pts = np.array([[[u, v]]], dtype=np.float32)  # (N,1,2)
+  undist_norm = cv2.undistortPoints(pts, K, dist)  # (N,1,2): (x', y')
+  # 필요 시 다시 픽셀로:
+  pix = cv2.convertPointsToHomogeneous(undist_norm).reshape(-1,3)  # [x',y',1]
+  pix = (K @ pix.T).T
+  u2, v2 = pix[0,0]/pix[0,2], pix[0,1]/pix[0,2]
+
+- 3D → 2D (왜곡 포함 전방 투영)
+  import numpy as np
+
+  def project_with_dist(Xw, K, R, t, dist):
+      Xc = (R @ Xw) + t                # (3,)
+      x = Xc[0] / Xc[2]
+      y = Xc[1] / Xc[2]
+      k1,k2,p1,p2 = dist[:4]
+      k3 = dist[4] if len(dist) > 4 else 0.0
+
+      r2 = x*x + y*y
+      Lr = 1 + k1*r2 + k2*r2*r2 + k3*r2*r2*r2
+      dx = 2*p1*x*y + p2*(r2 + 2*x*x)
+      dy = p1*(r2 + 2*y*y) + 2*p2*x*y
+      xd = x*Lr + dx
+      yd = y*Lr + dy
+
+      u = K[0,0]*xd + K[0,1]*yd + K[0,2]
+      v = K[1,1]*yd + K[1,2]
+      return np.array([u, v]), Xc[2]
+
+(C) KITTI 등 데이터셋
+    KITTI는 보통 이미 rectification이 끝난 상태(= 왜곡이 제거된 이미지)를 제공합니다.
+    따라서 KITTI calib 파일에서 distortion 계수가 없거나 0으로 주어지면 이미 보정된 이미지라고 보면 됩니다.
+
+5. 정리
+   - Distortion coefficients는 카메라 렌즈 왜곡을 보정하기 위한 계수
+   - 보정은 정규화 좌표에서 먼저 적용
+   - OpenCV의 calibrateCamera로 추정, undistort, undistortPoints로 보정
+   - 데이터셋에 따라 distortion 계수가 주어지면 반드시 보정 단계 추가, 0이라면 rectified 데이터일 가능성이 큼
+
