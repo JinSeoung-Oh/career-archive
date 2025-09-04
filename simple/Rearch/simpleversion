@@ -35,11 +35,45 @@ NeRF(Neural Radiance Fields) Overview 연구 (2022.12.08 업데이트)
 - SOTA 3D view synthesis 알고리즘의 원리 및 한계에 대한 체계적 이해 확보.
 -----------------------------------------------------------------------------------------------------------
 3D Computer Vision R&D (2022~2023)
-- 3D Object Detection (Indoor/Outdoor, Point Cloud 기반)
-- BEV 변환, Calibration, Rotation Matrix & Quaternion 기반 좌표계 변환 연구
-- 2D-3D 변환 및 Segmentation (SAM 기반 2D → 3D 확장 실험)
-- RGB-D 카메라 활용 데이터 수집 및 API (CPU/GPU) 최적화
-- Semantic Scene Completion 및 Reconstruction 테스트
+- STRL + PV-RCNN (Representation Learning + 3D Object Detection)
+  개요: STRL(Spatio-Temporal Self-Supervised Representation Learning, ICCV 2021)을 기반으로 BYOL 방식으로 학습된 representation을 PV-RCNN(OpenPCDet 기반) detector에 적용.
+  핵심: labeled 데이터가 부족한 상황에서 representation learning을 활용한 3D object detection 개선 실험.
+  진행: STRL backbone과 PV-RCNN backbone weight 연동 구조 검토 및 환경 세팅 완료.
+- BYOL (Bootstrap Your Own Latent)
+  개요: Self-supervised representation learning 방식. Online / Target network 구조, predictor 활용, negative pair 불필요.
+  핵심: Contrastive learning의 한계를 보완해 representation 품질 향상.
+  진행: 알고리즘 구조 분석 및 코드 기반 학습 실험.
+- BtcDet (AAAI 2022)
+  개요: LiDAR occlusion으로 인한 정보 손실 문제를 foreground–target object pair 기반으로 최소화하는 3D detector.
+  실험:
+    Inference 모듈 부재로 test.py 수정 → 좌표 추출 코드 개발.
+    Cloud point 좌표, Camera 좌표계, Image plane 좌표 변환 및 JSON 저장까지 구현.
+    Projection 시 발생하는 Y축 오차(5~20px) 보정 완료.
+  진행 수준: 실험 및 좌표 변환 모듈 개발 완료. Inference 한계와 Linux-only 환경 제약 확인.
+- SFA3D (Complex-YOLOv4 기반)
+  개요: YOLO 계열의 real-time 3D object detection. BEV map 입력, keypoint 기반 예측.
+  실험: test.py 커스터마이징 → 3D 박스 corner 좌표를 2D image로 projection 및 시각화 기능 추가.
+  진행 수준: Inference 속도 최적화 검증 완료. 성능 자체는 한계 있으나 속도 실험 목적으로 활용.
+- DeMF (CVPR 2022)
+  개요: 2D image와 3D point cloud를 융합하여 object-level bounding box를 강화하는 multi-modal detector.
+  핵심: 3D 공간에서 손실되는 geometry 정보를 2D image feature로 보완.
+  진행: 환경 세팅, FCAF3D backbone 적용 검토, numba 버전 호환성 문제 해결 과정 기록.
+- FCAF3D (Samsung Labs, S3DIS dataset)
+  개요: Indoor PCD 기반 Sparse convolution + anchor-free 3D detector.
+  실험:
+    데이터 전처리 오류 수정 (S3DIS → space insertion bug).
+    Hyper-parameter 조정 후 visualization 진행.
+   진행 수준: 성능 저자 수준 도달 실패했으나 일부 개선된 결과 확인. JSON 좌표 저장 모듈 구현 완료.
+- Panoptic-PolarNet (CVPR 2021)
+  개요: 3D panoptic segmentation (semantic + instance). Proposal-free 구조, Polar BEV 기반 인코딩.
+  실험: SemanticKITTI dataset 적용 → 3D 좌표 dictionary 저장 및 visualization.
+  문제점: class-level annotation 불완전, label 매핑 오류 발견. 일부 human class labeling 미확인.
+  진행 수준: 초기 테스트 완료. 개선 필요 단계에서 중단.
+- SoftGroup (CVPR 2022 Oral)
+  개요: 3D instance segmentation에서 hard grouping 한계를 보완하는 soft grouping 방식.
+  실험: ScanNet dataset 기반 테스트. result.ply에서 point별 color label 추출 및 시각화.
+  문제점: 모든 point labeling → 검수 어려움. 2D image 매칭 미흡.
+  진행 수준: 모델 성능 검증 완료. 실용성 한계로 활용 중단.
 -----------------------------------------------------------------------------------------------------------
 Text-to-Image & De-identification R&D (2023.08–10, 2023.08.25/09.21/10.11 업데이트)
 - 모델 범위: Imagen-pytorch(구현체), DALL·E 2(PyTorch/LAION), Stable Diffusion v2(realistic), DreamBooth, SD-Depth.
