@@ -1,0 +1,18 @@
+1. 모델 구조
+   - STRL(Spatio-temporal Self-Supervised Representation Learning, ICCV 2021) 모델로 3D 포인트 클라우드에 대한 표현 학습을 수행.
+   - 학습된 표현을 KITTI dataset 기반의 PV-RCNN(3D Object Detection) 모델에 연결.
+   - PV-RCNN은 OpenPCDet 프레임워크 기반 → Linux 환경 전용 지원.
+
+2. 연구 동기
+   - Point cloud 데이터셋 구축은 비용이 크기 때문에 unlabeled data를 활용할 수 있는 self-supervised representation 학습이 필요.
+   - STRL은 BYOL (Bootstrap Your Own Latent) 프레임워크를 차용하여, 3D object detection 성능 향상에 필요한 feature representation을 학습.
+
+3. 구현 관점
+   - STRL의 output을 PV-RCNN의 backbone 모듈과 연계.
+   - PV-RCNN의 Backbone(예: VoxelBackBone8x)을 학습된 representation 기반 weight로 초기화 후 BYOL 적용.
+   - OpenPCDet 내 pv_rcnn.py 수정 필요(Forward 함수 추가) 등 커스터마이즈 요구.
+
+4. 성능 (KITTI Dataset 기준, Car class)
+   - Hard level: AP 79.39% → 현재 최고 성능 달성.
+   - Moderate level: AP 81.88% → 전체 7위, SOTA(BtcDet) 대비 약 1% 차이.
+     → 즉, STRL + PV-RCNN 조합은 어려운 조건에서도 강한 성능을 보임.
