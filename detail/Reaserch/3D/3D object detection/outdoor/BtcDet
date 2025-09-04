@@ -1,0 +1,55 @@
+(2022.12.29 기준)
+1. 모델 개요
+   - LiDAR 기반 3D Object Detection 모델
+   - 포인트 클라우드에서 가려져서 보이지 않는 영역(occlusion, signal miss) 으로 인한 정보 손실 문제를 해결하는 접근
+   - Backbone network feature → RPN(Region Proposal Network) → Proposal과 Target Object를 겹쳐서 정보 손실을 최소화하는 구조
+
+2. 주요 특징
+   - 소실된 포인트를 직접 채워 넣는 학습은 아님
+   - 학습/테스트 코드 상 제한이 있어 inference-only 모드 사용 불가 (라벨 없는 데이터로는 동작 불가)
+   - spconv 1.2.1 버전을 사용 (Linux 전용 지원, Windows 지원 불가)
+   - 환경 의존성이 강하며, 특정 PyTorch/CUDA 버전 조합에서만 정상 동작
+
+3. 성능 (KITTI Cars 기준)
+   - Moderate level: AP 82.86% (SOTA 성능)
+   - 단, 상위권 모델들 간 성능 차이는 1% 미만
+
+4. 제약사항 및 주의점
+   - raw KITTI 데이터셋을 그대로 사용 불가, 반드시 사전 전처리(pre-processing) 필요
+   - Projection(3D → 2D) 과정에서 좌표 변환 오차가 일부 발생 (수 픽셀 수준)
+   - 환경 설정 시 Linux 전용 종속성(spconv, 특정 torch 버전)과 설치 옵션을 반드시 맞춰야 함
+
+============================================================
+BtcDet 실험 요약 (내부 검증 결과)
+1. 코드 동작 확인
+   - test.py 실행 시 좌표 추출은 가능했으나, 소실된 point를 채우는 부분은 학습되지 않음을 확인.
+   - test.py 모드를 testing으로 바꿔도 내부 코드에서 강제로 training으로 전환 → 결과적으로 inference 전용 모듈 작성은 불가능.
+   - 즉, labeled data가 없는 상황에서는 동작 자체가 불가하다고 판단.
+
+2. Projection & 좌표 변환 검증
+   - 모델이 리턴한 point cloud 좌표는 정확하게 대응됨.
+   - 변환 과정:
+     Point cloud 좌표 → Camera 좌표 → Image plane 좌표 변환
+   - Projection 과정에서 Y축 회전 값이 과소 평가되는 문제를 발견 → 수치 보정 완료.
+   - 최종 오차 범위:
+     X축: 약 0~5픽셀
+     Y축: 약 5~20픽셀
+     → 실제 projection 시 발생 가능한 합리적인 오차 범위로 판단.
+
+3. 좌표 조정 & 출력 포맷
+   - 2D bbox와 projected 3D box의 정합을 맞추기 위해 X, Y 좌표 변화량의 부호 기반 조정 수행.
+   - 일부 경우 2D 좌표가 어긋날 가능성은 있으나, bias 최소화를 위해 현재 수준에서 조정 완료.
+   - 최종 결과:
+     각 frame에 대해 cloud point 좌표, camera 좌표계 좌표, image plane 좌표를 json 포맷으로 저장.
+   - 구조:
+     {
+      "frame_id": [
+         {"in_cloudpoint": [...]},
+         {"in_camera_system": [...]},
+         {"on_image": [...]}
+        ]
+      }
+
+4. 환경 제약
+   - Linux + PyTorch 1.10 + CUDA 11.3 환경에서만 안정적으로 실행 확인.
+   - spconv 1.2.1 의존성으로 인해 Windows 환경 지원 불가.
