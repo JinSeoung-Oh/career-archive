@@ -40,4 +40,10 @@ Text-to-Image & De-identification R&D (2023.08–10, 2023.08.25/09.21/10.11 업�
 - 비식별화 실험: SD/SD-Depth + YOLOv8(사람)·YOLOv8-face(얼굴)로 대체 얼굴 캐스팅 파이프라인 시도. 배경 생성/스케일 불일치·체형 노출 한계 확인.
 - Insight: 일반 T2I만으로는 실무용 얼굴 비식별화 목적에 부적합. 탐지·분할·정합(registration)·속성 제어가 결합된 전용 파이프라인 필요.
 -----------------------------------------------------------------------------------------------------------
-
+Image Generation with Text (조건 기반) — InST / SD v2-depth / Inpainting
+- 업데이트: 2023-08-25(기록 시작) · 2023-08-30(Depth/Inpaint)
+- InST (Style transformer with diffusion): Stable Diffusion v1 기반 inversion 스타일 전이. 기본 4종 스타일(Andre Derain, longhair, modern, woman) 적용 검증, 커스텀 스타일은 embedding.pt 학습 필요.
+- Stable Diffusion v2-depth: 원본의 구도·포즈(Depth) 유지 + 조건 프롬프트로 객체/스타일 대체. 다인 장면·negative prompt·재시도 시 출력 안정성 저하/무시 현상 확인. 인종·속성 편향 관찰.
+- Stable Diffusion v2-inpainting: 마스크 영역만 생성·캐스팅. 마스크 디테일 민감, 품질·안정성 편차 존재.
+- 결론 요약: “텍스트=조건” 방식은 필터·스타일·부분 치환엔 유용하나, 일관성·편향·정합 이슈를 해결하기 위한 정교한 마스킹·깊이/랜드마크 정합·프롬프트 관리가 필수.
+-----------------------------------------------------------------------------------------------------------
