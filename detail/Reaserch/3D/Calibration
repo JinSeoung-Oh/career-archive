@@ -1,0 +1,27 @@
+1. Calibration 정의
+   - Calibration: Real world → Camera → Image plane 좌표계 간 좌표 일치 과정.
+   - Projection Matrix: Intrinsic matrix × Extrinsic matrix (Rotation + Translation) 조합으로, 카메라 좌표계와 이미지 평면 좌표를 연결.
+
+2. Intrinsic / Extrinsic
+   - Intrinsic matrix: 카메라 내부 파라미터 (focal length, 중심 좌표 등).
+   - Extrinsic matrix: 좌표계 간 변환 관계 (World ↔ Camera). Calibration은 주로 Extrinsic을 구하는 과정.
+
+3. Ray & RayCasting
+   - Ray = 시작점 O(카메라 초점) + t × d(방향).
+   - 각 픽셀은 하나의 Ray와 대응되며, 여러 Ray가 모여 Projection 이미지 형성.
+   - RayCasting: 광선을 따라가 충돌체와의 교차점 검출.
+
+4. Calibration 방법
+    -1. Target-based Calibration
+         - Object 단위로 개별 Calibration 진행 → 높은 정확도.
+         - 비용이 큼.
+         - 예시: nuScenes dataset
+         - 저장 구조 예:
+           {pcd: "0000.pcd", {object_1: "calib_1.txt", ...}, img: "0000.png"}
+    -2. Targetless Calibration
+        - Scene 전체에 대해 하나의 Projection matrix만 정의.
+        - 비용 저렴, 그러나 Object별 정확도 낮음.
+        - 기준 Object 이외는 Z축 10m 이상에서 급격한 오차.
+        - 예시: KITTI dataset
+         - 저장 구조 예:
+           {pcd: "xxxx.pcd", calib: [...], image: [...]}
