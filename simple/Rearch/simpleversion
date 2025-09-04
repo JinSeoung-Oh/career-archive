@@ -75,6 +75,21 @@ NeRF(Neural Radiance Fields) Overview 연구 (2022.12.08 업데이트)
   문제점: 모든 point labeling → 검수 어려움. 2D image 매칭 미흡.
   진행 수준: 모델 성능 검증 완료. 실용성 한계로 활용 중단.
 -----------------------------------------------------------------------------------------------------------
+연구 주제: 2D Segmentation 기반 3D Segmentation 변환 (2023.8.18)
+- 목적: 2D SAM(Segment Anything Model) 결과를 활용해 3D Panoptic Segmentation으로 확장
+- 접근 방식:
+  SAM 결과를 정규화된 color label로 매핑
+  RGB + depth map으로 3D point cloud 생성 (single view → LiDAR PCD와 비교 검증)
+  생성된 PCD에 Panoptic segmentation 적용하여 {class : 3D 좌표} 반환
+  Object boundary 문제 보완을 위해 Panoptic segmentation 추가 적용
+- 특이사항:
+  KITTI calibration chain(P2, R0, Tr_velo2cam)을 이용해 2D 픽셀→3D 좌표 변환 구현
+- 연구 성과:
+  2D color label과 3D point 매칭 완료
+  생성된 PCD와 실제 LiDAR PCD 비교 완료
+  Panoptic segmentation까지 연계해 3D 공간 단위의 labeling 가능성 확인
+  Boundary/occlusion 문제 해결 필요
+-----------------------------------------------------------------------------------------------------------
 Text-to-Image & De-identification R&D (2023.08–10, 2023.08.25/09.21/10.11 업데이트)
 - 모델 범위: Imagen-pytorch(구현체), DALL·E 2(PyTorch/LAION), Stable Diffusion v2(realistic), DreamBooth, SD-Depth.
 - 결과: SD v2로 효율적 생성 확인, DreamBooth로 특정 인물/스타일 재현 가능하나 프롬프트 순서·체크포인트 민감, 남성 이미지 편향·속성 혼입 이슈.
