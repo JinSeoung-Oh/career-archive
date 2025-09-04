@@ -28,3 +28,11 @@ Super Resolution & Deblur R&D (2022.05.09 ~ 2022.06.02 업데이트, 일부 05.1
 - 학습 세팅: AI Hub 한글 13K 데이터 기반 SwinIR real-world x4 GAN 학습(약 385 epoch) 및 가중치/로그 확보.
 - Insight: “OCR 향상 목적의 SR/디블러 단독 적용”은 이득이 작고, 도메인 특화 데이터+후처리(문자 보존) 전략이 필수.
 -----------------------------------------------------------------------------------------------------------
+NeRF(Neural Radiance Fields) Overview 연구 (2022.12.08 업데이트)
+- NeRF 기본 구조(Multi-Layer Perceptron 기반 5D 입력 → RGB·Density 예측)와 학습 과정 정리.
+- Ray 기반 Volume Rendering 및 Positional Encoding 원리 학습.
+- NeRF 확장 연구(NVSF, Mip-NeRF, KiloNeRF, Plenoxels) 비교 분석.
+- SOTA 3D view synthesis 알고리즘의 원리 및 한계에 대한 체계적 이해 확보.
+-----------------------------------------------------------------------------------------------------------
+
+
