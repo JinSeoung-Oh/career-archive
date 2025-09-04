@@ -1,0 +1,48 @@
+1. 연구 목적
+   - 2D segmentation(SAM model)의 결과를 3D segmentation으로 확장하여, 단일 뷰 혹은 다중 뷰 RGB 이미지로부터 3D panoptic labeling 수행 가능성을 검증.
+
+2. 연구 접근
+   - 2D 결과 처리
+     SAM 모델 출력 → class별 color label 매칭
+     {2D pixel coordinate – color label} 형식으로 저장
+
+3. 3D 변환 방식
+  - KITTI calibration matrix를 이용한 역투영(back-projection) 방식을 채택.
+  - Calibration file(P2, R0, Tr_velo2cam)에서 focal length, principal point, baseline 추출:
+    𝑥=((𝑢−𝑐_𝑥)⋅𝑍 / 𝑓_𝑥) +𝑏_𝑥
+    𝑦=((𝑣−𝑐_𝑦)⋅𝑍 / 𝑓_𝑦) +𝑏_𝑦
+    𝑧=𝑍
+ ​ - 변환 체인:
+    (𝑢,𝑣,𝑍)→ project_image_to_rect→ (𝑋_𝑟,𝑌_𝑟,𝑍_𝑟)→ 𝑅_0→ (𝑋_𝑟𝑒𝑓, 𝑌_𝑟𝑒𝑓, 𝑍_𝑟𝑒𝑓)→ 𝑇𝑟_𝑣𝑒𝑙𝑜2𝑐𝑎𝑚→ (𝑋_𝑣𝑒𝑙𝑜, 𝑌_𝑣𝑒𝑙𝑜, 𝑍_𝑣𝑒𝑙𝑜)
+
+4. Python 구현:
+   def project_image_to_rect(uv_depth, fx,fy,cx,cy, bx,by):
+       x = ((uv_depth[:,0]-cx)*uv_depth[:,2]) / fx + bx
+       y = ((uv_depth[:,1]-cy)*uv_depth[:,2]) / fy + by
+       return np.stack([x,y,uv_depth[:,2]], axis=1)
+
+   def project_image_to_velo(uv_depth, fx, fy, cx, cy, R0, v2c, bx, by):
+       pts_rect = project_image_to_rect(uv_depth, fx,fy,cx,cy, bx,by)
+       pts_ref  = R0 @ pts_rect.T
+       pts_velo = np.dot(np.hstack([pts_ref.T, np.ones((pts_ref.shape[1],1))]), v2c.T)
+       return pts_velo
+
+    이를 통해 NeRF 없이 RGB+depth → 3D PCD를 생성.
+
+5. Segmentation 적용
+   - 변환된 3D point cloud에 Panoptic segmentation 적용
+   - {class : 3D coordinates} 반환
+   - Boundary 문제 보완 위해 panoptic segmentation 결과와 병합
+
+6. 중간 성과
+   - SAM 결과를 color label로 매핑 완료
+   - Single-view RGB + depth map → 3D PCD 생성 및 LiDAR PCD와 비교 완료
+   - Panoptic segmentation 결과까지 결합하여 {class : 좌표} dictionary 생성 가능
+   - Depth 품질 문제, single-view boundary 문제, occlusion 문제로 인한 정확도 한계 존재
+
+7. 향후 계획
+   - Multi-view data 적용 및 boundary 문제 개선
+   - Panoptic segmentation 성능 향상을 통한 final 3D labeling 품질 개선 
+   - 정확도 문제로 인한 중단
+
+SAM-3D 변환 모듈을 cuboid 기반 detection과 연계 테스트
