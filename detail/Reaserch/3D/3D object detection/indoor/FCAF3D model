@@ -1,0 +1,33 @@
+1. 개요
+   - Indoor PCD (S3DIS dataset) 기준 최신 SOTA 3D object detection 모델
+   - 공식 코드: SamsungLabs/fcaf3d
+   - Anchor-free 방식 적용, ResNet 기반 Sparse convolution backbone, sparsity-pruned decoder, anchor-free head 사용
+
+2. 핵심 아이디어
+   - 입력: RGB-colored point clouds (indoor dataset 특성상 segmentation용 color 포함)
+   - 출력: 3D bounding boxes (center + size + orientation)
+   - 구조:
+     Backbone: Sparse ResNet
+     Neck: Simplified GSDN decoder (sparsity pruning 적용)
+     Head: Anchor-free 방식 → bbox 중심 근처 점만 positive match로 간주 (center sampling)
+   - 장점: Anchor-free 설계와 sparse convolution으로 indoor 3D detection에서 효율적 성능
+
+3. 실험 및 검증
+   - 데이터셋 문제 해결:
+     S3DIS 전처리 시 특정 좌표 값이 잘못 split되는 bug 발견 → collect_indoor3d_data.py 수정하여 해결.
+   - 모델 테스트:
+     score_thr=0.2 ~ 0.8 범위로 시각화 검증.
+     원 논문 결과와 동일 수준은 아니었으나, 하이퍼파라미터 조정 및 미세 튜닝 후 개선된 결과 확보.
+     일부 case에서 모델 예측이 GT보다 더 디테일하게 bbox를 생성했으나, 확대 확인 시 잘못된 boxing도 존재.
+   - 결과 저장:
+     각 PCD 파일별 {pred_label : pred_bbox_coordinates} 형태 JSON 저장 완료.
+     bbox 좌표를 [cen_x, cen_y, cen_z, h, w, l] 형태로 변환하는 추가 함수 구현.
+
+4. 환경 이슈
+   - Python 3.7 권장, Python 3.9 환경에서 numba/llvmlite 버전 호환성 이슈 존재.
+   - MMDetection3D, MMCV, MMsegmentation, MinkowskiEngine, Rotated-IoU 등 설치 필요.
+   - Dockerfile 제공으로 환경 구성 자체는 비교적 간단, 단 일부 git clone 경로 수정 필요.
+
+5. 관찰된 한계
+   - 일부 bbox가 point가 존재하지 않는 영역까지 확장되는 문제 발생.
+   - 실내 장면 전체가 show up되어, 시각화 단계에서 방 내부 확대 기능 필요.
