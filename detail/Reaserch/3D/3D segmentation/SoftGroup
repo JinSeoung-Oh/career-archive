@@ -1,0 +1,26 @@
+1. 개요
+   - 3D Point Cloud Instance Segmentation 모델
+   - 기존 instance/semantic segmentation이 하나의 point에 단일 라벨(hard grouping) 만을 적용하는 한계를 해결 → soft grouping을 도입하여 각 point에 복수의 라벨 후보를 부여한 후, 후처리 단계에서 최종 라벨을 선택.
+   - CVPR 2022 Oral 채택 모델.
+
+2. 핵심 아이디어
+   - Soft Grouping
+     1단계: 각 point에 여러 라벨 후보 부여.
+     2단계: 후보 중 최적의 라벨을 classification 등으로 선택 → segmentation 에러 감소.
+   - Region Proposal 방식 차이
+     기존: bbox 기반 region proposal → hard grouping.
+     SoftGroup: segmentation 결과 기반 region proposal → region 단위에도 soft grouping 적용.
+   - 확장성
+     PartNet, ShapeNet 등 대규모 데이터셋 기반 class 확장 가능성 검토.
+
+3. 실험 환경
+   - 주요 dependency: spconv 2.x, open3d (Python 3.9에서 동작 확인)
+   - 추가 라이브러리: munch, pandas, plyfile, pyyaml, scikit-learn, scipy, tensorboard, tqdm 등
+
+4. 테스트 결과
+   - Output: result.ply 파일 → 각 point에 (x, y, z) 좌표 및 (R,G,B) 라벨 정보 포함.
+   - 장점: segmentation 결과 자체는 안정적이며 point-level 라벨링 가능.
+
+5. 한계/고민점:
+   - 모든 point에 라벨이 붙어 작업자가 직접 검수하기에는 부담이 큼.
+   - 대응되는 2D 이미지가 없으면 특정 객체/영역(예: 창문 여부)을 명확히 구분하기 어려움.
