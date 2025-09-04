@@ -1,0 +1,36 @@
+SFA3D (Complex-YOLOv4 개선 모델)
+1. 배경 및 목적
+   - 기존 Complex-YOLOv4 (3D Object Detection) 모델의 test.py 속도가 현저히 느림.
+   - 이를 개선하기 위해 SFA3D (Single-Stage Feature Aggregation 3D detector) 모델 사용.
+   - 초점은 추론(inference) 속도 개선에 있음 → 다른 모델 대비 성능은 다소 낮지만, 실시간성에 유리.
+
+2. 모델 구조
+   - Backbone: ResNet 기반 Keypoint Feature Pyramid Network (KFPN, RTM3D 제안)
+   - 입력: LiDAR 포인트 클라우드를 BEV(Bird’s Eye View) map으로 변환 (H, W, 3)
+   - 출력 (keypoint 기반):
+     Heatmap center (H/S, W/S, C) – 클래스별 중심 확률 맵
+     Center offset (H/S, W/S, 2) – 중심 보정값
+     Heading angle (Yaw)
+     Dimension (h, w, l)
+     Z 좌표
+   - 타겟 값 (detections): 7-DOF bounding box
+     (cx, cy, cz, l, w, h, θ)
+   - Loss function: focal loss
+
+3. 성능
+   - KITTI 데이터셋 기준 평가 코드 제공됨.
+   - 성능 자체는 SOTA 대비 부족하나, 추론 속도는 현저히 빠름.
+   - 따라서 실시간성이 중요한 응용(예: 자율주행, 로봇 perception)에 유리.
+
+4. 실험 및 코드 수정
+   - 기본 test.py 모듈에서 3D box corner 좌표 반환 및 2D projection 기능을 추가.
+   - compute_box_3d 와 project_to_image 를 활용해 3D → 2D 변환 구현.
+   - 최종적으로 각 object에 대해
+     3D corners (in LiDAR / camera coordinates)
+     2D corners (on image plane)
+     를 함께 반환하도록 수정.
+
+5. 정리
+   - 장점: 빠른 추론 속도, BEV 입력 구조 단순, 실시간 응용 적합
+   - 단점: 성능은 최고 수준 아님, 정확도는 PV-RCNN/BtcDet보다 낮음
+   - 실험 성과: 3D bounding box → camera/image 좌표 변환 및 2D corner 출력까지 확장 완료
