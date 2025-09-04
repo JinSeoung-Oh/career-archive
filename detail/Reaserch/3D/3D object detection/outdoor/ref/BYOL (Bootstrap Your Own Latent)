@@ -1,0 +1,25 @@
+1. 개요
+   - Self-supervised representation learning 기법 중 하나
+   - Online network 와 Target network 두 개의 네트워크를 동시에 사용
+   - Teacher–Student 학습 방식과 유사하게, 두 네트워크가 서로 representation을 보완적으로 학습
+
+2. 학습 과정
+   -1. 입력 데이터 준비
+       - 하나의 이미지에 대해 서로 다른 augmentation 기법을 적용해 두 개의 뷰(view)를 생성
+   -2. 네트워크 입력
+       - 두 뷰 모두 Online network 와 Target network 에 입력됨
+   -3. Online network 학습 방식
+       - Target network의 label 이 아니라, representation 을 모방하여 학습
+       - Online network에는 추가적으로 predictor 모듈이 붙어 있어 Target representation과의 불일치를 줄임
+   -4. Target network 업데이트
+       - Online network의 파라미터를 slow-moving average (지수이동평균, EMA) 방식으로 반영하여 업데이트
+
+3. Contrastive Learning과의 차이
+   - Contrastive learning은 negative pair(다른 샘플)와의 구별을 필요로 함
+   - BYOL은 negative pair를 사용하지 않음
+   - 대신 predictor + EMA 기반 Target network 구성으로 representation collapse(모든 샘플이 같은 표현으로 수렴하는 문제)를 방지
+
+4. 장점
+   - Negative pair 불필요 → 대규모 batch나 memory bank 필요 없음
+   - 다양한 도메인(이미지, 포인트 클라우드, 비디오 등)에 쉽게 적용 가능
+   - 다른 self-supervised 기법 대비 간결하면서도 강력한 성능
