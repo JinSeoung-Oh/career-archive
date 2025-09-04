@@ -1,0 +1,30 @@
+DeMF (Object-Focused Image Fusion for 3D Detection)
+1. 개요
+   - SUN-RGBD dataset 기준, 기존 모델 대비 mAP 약 +2점 향상한 SOTA 수준 모델 (논문: arXiv:2207.10589)
+   - 공식 깃허브: haoy945/DeMF
+   - 공개 코드 기준은 VoteNet backbone 기반이며, 저자들은 어떤 backbone으로도 적용 가능함을 강조.
+
+2. 핵심 아이디어
+   - 문제의식: 3D point cloud는 occlusion(가려짐)이나 레이저 신호 약화로 인한 정보 손실이 발생 → detection 성능 저하.
+   - 해결 방식:
+     2D image와 3D point cloud를 동시 입력.
+     Image stream: CNN (ResNet 등)으로 이미지 feature 추출.
+     Point stream: PointNet++ 또는 sparse convolution 기반 모델로 point feature 추출.
+     Fusion module (Mapping + Deformable Attention):
+     - 3D point를 2D image로 projection → reference point 생성.
+     - reference point 주변 협소 영역에서 deformable attention 수행 → object-level feature 강화.
+     - 최종적으로 3D bounding box 좌표 및 크기 보정.
+
+3. 적용 데이터셋
+   - 필수 조건: point cloud와 대응되는 2D image가 pair로 존재해야 함.
+   - 대표적으로 SUN-RGBD dataset 적용 가능.
+   - Waymo와 같은 outdoor dataset 적용은 코드 분석 후 추가 API 필요성 검토 중.
+
+4. 환경 설정 이슈
+   - MMDetection3D, MMCV, MMsegmentation, MinkowskiEngine, Rotated-IoU 등 설치 필요.
+   - requirements.txt 상 일부 모듈 버전 불일치 문제 존재 → 수동 수정 및 openmim 활용 필요.
+   - Python 3.7 환경 권장, Python 3.9 사용 시 numba 버전 호환성 문제 발생 → 대체 버전으로 해결 가능.
+
+5. 실험 결과
+   - SUN-RGBD dataset에서 전처리 과정(Matlab 기반)을 Python으로 대체하여 실험 진행.
+   - 변환된 모듈은 원본과 유사한 결과를 제공했으며, 모델 학습 및 테스트에 활용 가능함을 확인.
