@@ -1,0 +1,33 @@
+1. Reference Camera 정의
+   -1. Reference camera: 여러 대의 카메라로 한 장면을 촬영했을 때, 기준이 되는 카메라.
+   -2. 선택된 1개의 카메라를 기준으로 나머지 카메라들의 intrinsic matrix(내부 파라미터) 가 조정됨.
+   -3. 따라서 Reference camera의 intrinsic matrix를 기준으로, 모든 카메라의 intrinsic matrix가 동일한 값으로 표현됨.
+
+2. Intrinsic Matrix 형태
+   -1. Reference camera 없는 경우: intrinsic matrix는 3×3
+       𝐾=| 𝑓_𝑥   0    𝑐_𝑥|
+         |  0   𝑓_𝑦   𝑐_𝑦|
+         |  0    0    1 |
+   -2. Reference camera 있는 경우: intrinsic matrix가 3×4 로 확장
+       [𝐾∣𝑏]
+       여기서 
+        𝑏 = baseline parameter = Reference camera와 다른 카메라 사이의 실제 거리(m)
+
+3. Reference Camera 구별법
+   -1. Reference camera: baseline parameter = 0
+   -2. 비-Reference camera: baseline parameter ≠ 0 (즉, 실제 거리 값 존재)
+
+   예시:
+   calib_0: baseline = 0 → Reference camera
+   calib_2: baseline ≠ 0 → Reference camera 아님
+
+4. Reference Camera 사용 의의
+   모든 카메라가 같은 intrinsic matrix를 공유하므로, 멀티뷰 정합이나 3D 복원 시 좌표계 일관성 확보 가능.
+   baseline parameter를 이용하면 Reference camera와 다른 카메라 사이의 상대적 위치 관계를 알 수 있음.
+   필요하다면 baseline을 이용해 각 카메라의 원래 intrinsic matrix(예: principal point 𝑐_𝑥,𝑐_𝑦)를 복원 가능.
+   같은 기종의 카메라를 쓴 경우, 왜곡 모델·초점거리도 동일하게 가정할 수 있음.
+
+5. 요약:
+   Reference camera는 기준 카메라, baseline=0
+   다른 카메라는 baseline ≠ 0
+   calib 파일에서 intrinsic matrix가 3×4라면 Reference camera 기반 보정이 적용된 것.
