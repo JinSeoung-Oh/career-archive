@@ -1,0 +1,45 @@
+프로젝트명: High-quality Data & Data Selection Research
+기간: 2024년 4월
+
+1) 목적
+   - AI 모델 성능에 직결되는 데이터 품질 기준을 정립하고, 실제 학습 과정에서 데이터 선택(Data Selection)의 중요성을 분석.
+   - Human-powered dataset, Active learning, Human-in-the-loop 접근법을 비교하여 효율적 데이터 수집·정제 전략을 제안.
+
+2) High-quality Data 정의
+   - 정확성: 레이블·측정값 오류 최소화.
+   - 완전성: 결측치 최소화.
+   - 일관성: 형식/구조가 통일되고 모순 없음.
+   - 신뢰성: 데이터 출처의 신뢰성 확보.
+   - 적시성: 최신 데이터, 해당 시기 맥락 반영.
+   - 다양성: 특정 클래스/그룹 편향 최소화.
+   - 가용성: 곧바로 학습에 사용할 수 있는 포맷 및 문서 제공.
+
+3) Human-powered Dataset 분석
+   - 특징: 경험 기반 파이프라인과 명확한 가이드라인·교육을 통해 구축.
+   - 품질 보장 요인: 샘플링 검증, 피드백 루프, 크라우드소싱 플랫폼 활용, 중복·일관성 검사, 지속적 모니터링.
+   - 품질 저하 요인: 레이블 오류, 샘플링 편향, 노이즈, 일관성 부족, 전문성 부족.
+
+   - Active learning과 차이점:
+     Active learning은 모델 불확실성을 기준으로 필요한 데이터를 추가 확보.
+     Human-in-the-loop는 모델 전 과정에 사람의 개입을 포함, 피드백 중심.
+
+4) Data Selection for Pretraining
+   - 일반적 절차:
+     Language Filtering
+     Heuristic Filtering
+     Data Quality 평가
+     Domain-specific Selection
+     Data Deduplication
+     Toxic/Explicit Content Filtering
+     Multilingual Model 대응 Selection
+     Data Mixing
+
+   - 텍스트 전처리와의 차이:
+     전처리는 단순한 데이터 정제에 초점.
+     데이터 선택은 모델 성능 향상을 위한 최적의 데이터 구성이 목적.
+     다양한 학습 단계별 전략: Pretraining, Instruction-tuning, Preference Fine-tuning, In-context Learning, Task-specific Fine-tuning 등.
+
+5) 성과 및 인사이트
+   - 데이터 품질 가이드라인 제안 → 실제 대규모 학습 파이프라인 적용 가능.
+   - Human-powered dataset의 장단점 정리 → 모델 학습용 데이터 확보 시 선택 기준 마련.
+   - 데이터 선택 전략 정리 → 다운스트림 테스크별로 최적화된 데이터셋 구성 방법론 제안.
