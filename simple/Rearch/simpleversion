@@ -34,5 +34,10 @@ NeRF(Neural Radiance Fields) Overview 연구 (2022.12.08 업데이트)
 - NeRF 확장 연구(NVSF, Mip-NeRF, KiloNeRF, Plenoxels) 비교 분석.
 - SOTA 3D view synthesis 알고리즘의 원리 및 한계에 대한 체계적 이해 확보.
 -----------------------------------------------------------------------------------------------------------
-
+Text-to-Image & De-identification R&D (2023.08–10, 2023.08.25/09.21/10.11 업데이트)
+- 모델 범위: Imagen-pytorch(구현체), DALL·E 2(PyTorch/LAION), Stable Diffusion v2(realistic), DreamBooth, SD-Depth.
+- 결과: SD v2로 효율적 생성 확인, DreamBooth로 특정 인물/스타일 재현 가능하나 프롬프트 순서·체크포인트 민감, 남성 이미지 편향·속성 혼입 이슈.
+- 비식별화 실험: SD/SD-Depth + YOLOv8(사람)·YOLOv8-face(얼굴)로 대체 얼굴 캐스팅 파이프라인 시도. 배경 생성/스케일 불일치·체형 노출 한계 확인.
+- Insight: 일반 T2I만으로는 실무용 얼굴 비식별화 목적에 부적합. 탐지·분할·정합(registration)·속성 제어가 결합된 전용 파이프라인 필요.
+-----------------------------------------------------------------------------------------------------------
 
