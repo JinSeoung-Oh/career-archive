@@ -1,0 +1,40 @@
+프로젝트명: NeRF Overview Research
+업데이트일: 2022년 12월 8일
+
+1. 연구 개요
+   -1. NeRF(Neural Radiance Fields)는 여러 장의 2D 이미지로부터 새로운 시점의 장면을 합성하는 View Synthesis 알고리즘.
+   -2. Tesla의 3D annotation tool 등 실제 산업 적용 사례 존재.
+   -3. 입력: 공간 좌표 (x, y, z) + 시점 방향 (θ, Φ) → 출력: RGB 색상 + 밀도(density).
+   -4. 핵심 아이디어는 Camera Ray를 추적하여 NeRF MLP에 입력하고, 결과값을 Volume Rendering으로 픽셀 단위 영상으로 합성하는 구조.
+
+2. 핵심 구성 요소
+   -1. NeRF MLP 구조
+       -1) Input: (x, y, z, θ, Φ)
+       -2) 초기 8개 layer → 위치 기반 밀도(σ) 학습.
+       -3) 9번째 layer에서 viewing direction (θ, Φ) 반영하여 색상(RGB) 출력.
+       -4) 비램버시안 효과 제거(각도에 따라 색·반사율 변하는 문제).
+       -5) DeepSDF skip connection 적용 → 5번째 layer에서 위치정보 보강.
+   -2. Volume Rendering
+       -1) 각 Ray를 따라 RGB와 밀도를 weighted sum으로 결합 → 최종 픽셀 색상 C(r) 산출.
+       -2) Stratified Sampling: Ray 상 구간을 균등 분할하여 점 추출.
+       -3) Hierarchical Volume Sampling: Coarse/Fine network 2단계 학습으로 효율적 샘플링 수행.
+   -3. Positional Encoding
+       -1) 저차원 입력(5D)을 고차원 공간으로 맵핑하여 high-frequency 정보 학습 가능하게 설계.
+       -2) 위치 좌표는 60차원, viewing direction은 24차원으로 확장.
+       -3) 일반 Transformer의 positional encoding과는 다른 목적(주파수 확장).
+
+3. NeRF Family (확장 기법)
+   -1. NSVF (Neural Sparse Voxel Fields): 복셀 구조 기반, NeRF보다 빠르고 고품질.
+   -2. Mip-NeRF: Ray 대신 conical frustum 사용 → anti-aliasing 개선, 에러율 대폭 감소.
+   -3. KiloNeRF: 하나의 거대한 MLP 대신 수천 개의 작은 MLP 병렬 처리 → 속도/저장 효율 개선.
+   -4. Plenoxels: MLP 대신 sparse 3D grid 활용 → NeRF와 유사한 품질, 훨씬 빠른 속도.
+
+4. Ray 개념 (중요)
+   -1. Ray = 시작점(O) + 방향(d)으로 정의, O+td 형태.
+   -2. 하나의 Ray가 하나의 픽셀 색상을 결정, 투명도(밀도)에 따라 여러 물체가 중첩된 경우 시각적 결과 달라짐.
+   -3. 카메라 projection의 기본 개념과 동일.
+
+5. 연구 성과
+   -1. NeRF 핵심 개념 및 구현 원리(MLP, Ray, Volume Rendering, Positional Encoding)를 체계적으로 정리.
+   -2. NeRF family 모델(NSVF, Mip-NeRF, KiloNeRF, Plenoxels)의 개선 방향 및 성능 차이를 분석.
+   -3. 3D view synthesis 연구에서 발생하는 연산 효율성·고주파 학습·렌더링 품질 이슈에 대한 이해를 확보.
