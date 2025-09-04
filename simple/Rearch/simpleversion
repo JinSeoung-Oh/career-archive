@@ -34,6 +34,13 @@ NeRF(Neural Radiance Fields) Overview 연구 (2022.12.08 업데이트)
 - NeRF 확장 연구(NVSF, Mip-NeRF, KiloNeRF, Plenoxels) 비교 분석.
 - SOTA 3D view synthesis 알고리즘의 원리 및 한계에 대한 체계적 이해 확보.
 -----------------------------------------------------------------------------------------------------------
+3D Computer Vision R&D (2022~2023)
+- 3D Object Detection (Indoor/Outdoor, Point Cloud 기반)
+- BEV 변환, Calibration, Rotation Matrix & Quaternion 기반 좌표계 변환 연구
+- 2D-3D 변환 및 Segmentation (SAM 기반 2D → 3D 확장 실험)
+- RGB-D 카메라 활용 데이터 수집 및 API (CPU/GPU) 최적화
+- Semantic Scene Completion 및 Reconstruction 테스트
+-----------------------------------------------------------------------------------------------------------
 Text-to-Image & De-identification R&D (2023.08–10, 2023.08.25/09.21/10.11 업데이트)
 - 모델 범위: Imagen-pytorch(구현체), DALL·E 2(PyTorch/LAION), Stable Diffusion v2(realistic), DreamBooth, SD-Depth.
 - 결과: SD v2로 효율적 생성 확인, DreamBooth로 특정 인물/스타일 재현 가능하나 프롬프트 순서·체크포인트 민감, 남성 이미지 편향·속성 혼입 이슈.
