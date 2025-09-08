@@ -1,0 +1,56 @@
+기간: 2023년 12월
+
+1) 개요
+   -1. 목적: GraphRAG 구축을 위해 LlamaIndex를 코어 프레임워크로 채택(비교군: LangChain/Haystack).
+   -2. 구성: LlamaIndex + NebulaGraphDB + OpenAI, 로컬 LLM은 GGUF(LlamaCPP) 옵션 지원.
+
+2) 프로세스
+   -1. NebulaGraphDB 셋업
+       -1) SPACE/태그/엣지/인덱스 생성: entity(name string), relationship(relationship string) 등
+       -2) entity_index 생성으로 조회 성능 보강
+   -2. 데이터 전처리
+       -1) 다양한 파서 결과를 chunk(list-of-list 또는 id/text JSON) 로 정규화
+       -2) 길이 긴 청크는 요약 → 트리플릿 추출, 짧은 청크는 직접 추출
+   -3. 트리플릿 추출(한국어 최적화)
+       -1) GPT-3.5-turbo-0613 기반 커스텀 시스템 프롬프트
+       -2) 출력 포맷 고정: [{node_1, node_2, edge}, ...]
+       -3) 특수 패턴 처리: ‘=’ 포함 시 삼항 형태로 강제 추출
+       -4) 정규식으로 파싱 후 업서트용 리스트 구성
+   -4. 그래프 구축(KnowledgeGraphIndex)
+       -1) NebulaGraphStore로 업서트
+       -2) 필요 시 스토리지 persist/load
+       -3) GGUF 모델 사용 시 LlamaCPP로 대체 가능(정량화 모델)
+   -5. Retriever 구성
+       -1) KnowledgeGraphRAGRetriever + RetrieverQueryEngine
+       -2) 기본 키워드 추출 템플릿(DEFAULT_QUERY_KEYWORD_EXTRACT_TEMPLATE) 을 시스템 프롬프트 쪽에 반영(유저 프롬프트에 넣으면 추출 실패 사례 발생)
+       -3) 응답 후, 필요 시 kg_response → LLM 재투입하여 자연문 연결(응답 지연 trade-off)
+   -6. 업서트/후처리 유틸
+       -1) 수학 기호를 영문 토큰(EQUAL/MINUS/PLUS/MULTIPLY/DIVIDE) 으로 변환 후 저장/검색
+       -2) PyVis(NetworkX) 로 그래프 시각화(example.html)
+
+3) 동작 원리(요약)
+   -1. GraphRAG Retriever: 키워드 기반으로 Entity–Relation 연쇄로 이어진 서브그래프를 검색
+   -2. Modus Ponens(전건 긍정) 충족하는 관계망을 우선 채집 → 응답 근거 생성
+   -3. 새로운 지식 업서트 시에도 이 규칙을 만족하는 트리플릿으로 추가하여 일관성 유지
+
+4) 이슈/제약(관찰)
+   -1. 단순 트리플릿 그래프 한계
+       -1) 문장 의미가 유사 트리플릿으로 흩어져 핵심 정보가 누락되거나
+       -2) 서로 다른 표현의 트리플릿이 중복/충돌하며 검색 품질 저하
+   -2. 쿼리 민감도
+       -1) 모호한 사용자 질문일수록 키워드 추출이 어긋나고, 의도 엔티티 미정 시 관계 탐색 실패 확률 증가
+   -3. 기호 검색
+       -1) NebulaDB는 기호 저장은 가능하나, LLM 질의에는 기호 매칭 실패 → 영문 치환이 사실상 필수
+   -4. 도구 이슈 파악(레퍼런스)
+       -1) LlamaIndex KG 관련 공개 이슈(영문 우선 반환, gguf/OpenAI 지원 범위, 트리플릿 중복, 분산 스토리지 등) 추적만 수행(임의 수정/가정 없이 현상 확인 수준)
+
+5) Insights
+   -1. Graph 모델링은 ‘추출 품질 + 쿼리 명료도’가 좌우
+       -1) 같은 의미라도 트리플릿 표현이 달라지면 검색 누락이 발생 → 추출 규칙의 표준화가 필요
+       -2) 쿼리 분석(키워드·핵심 엔티티 명시) 이 불명확하면 관계 추적 실패가 증가
+   -2. 키워드 템플릿의 위치가 성패를 좌우
+       -1) Retriever 템플릿을 시스템 프롬프트에 통합해야 일관된 키워드가 나옴(사용자 프롬프트 주입은 실패 사례 확인)
+   -3. 수학 기호는 ‘표현 계층 분리’가 안전
+       -1) 저장은 원기호 그대로 + 검색용 치환 토큰 병행이 충돌 최소화
+   -4. 시각화는 디버깅 도구
+       -1) PyVis로 누락/중복/과밀 연결을 조기에 발견, 추출 규칙/쿼리 템플릿 튜닝에 활용
