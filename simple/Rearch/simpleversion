@@ -131,6 +131,14 @@ High-quality Data & Human-powered Dataset Research
  Language filtering, domain-specific selection, deduplication 등 사전학습 데이터 선택 과정을 체계적으로 정리.
  Pretraining, Instruction-tuning, Preference fine-tuning 등 다양한 학습 단계별 데이터 선택 전략 분석.
 -----------------------------------------------------------------------------------------------------------
+Multi-Agent GroupChat Framework for Synthetic Dialog Data (Aug 2024)
+- Microsoft Autogen 기반으로 GroupChat 데이터 생성 프레임워크 설계·구현; GroupChat Manager + persona-defined LLM Agents로 전문가 대화 스타일 자동화.
+- 페르소나 자동 생성(position list → system prompt/description 자동 생성) 및 Agent orchestration 커스터마이징, 저장/재현을 위한 JSON 라이브러리 포맷 정의.
+- Autogen 기본 한계를 보완: 대화 로그 후킹(log_message), 세션별 메시지 영속화, 최소 한 항목(이메일/전화/일정) 포함 품질 제약 검증 로직 추가.
+- 100턴 이상 장대화 분할 전략(주제 세분화, 마지막 n턴 컨텍스트 슬라이딩, 인과적 연결 규칙) 설계로 환각·중복 완화.
+- gpt-4o 환각 문제 구간에 대해 모델 스위칭(Claude 3.5) 및 프롬프트/턴 제한 최적화로 생성 안정성 향상.
+- 결과물: 재현 가능한 스크립트/구성 파일 세트, 다중 직군 페르소나 라이브러리, 샘플 멀티턴 코퍼스.
+-----------------------------------------------------------------------------------------------------------
 유사문항 생성 LLM 유효성/타당성 검토
 기간: 2024년 9월 6일
 - GPT-4, GPT-3.5, Claude-3.5를 활용해 수능 기출(수학·국어·국사·과학·영어) 기반 유사문항 생성 실험 진행.
