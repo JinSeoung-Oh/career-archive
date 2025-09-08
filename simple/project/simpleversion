@@ -36,3 +36,21 @@ Yolov5s 모델 경량화 및 속도 개선 (2022.03.31 게시) - https://github.
 - Multi-scale Template Matching 알고리즘(OpenCV) 적용 및 pairing 모듈 구현 시도.
 - 이미지 스케일 불균형 및 1픽셀 단위 연산으로 인한 계산량 폭증 문제 발생 → 일부 케이스는 자동화 불가능, 수동 annotation 방식으로 전환.
 --------------------------------------------------------------------------------------------------------------
+OCR 개발 현황 (EasyOCR 기반 파이프라인 구축)
+- 기간: 2024.02–04
+- 엔진 교체: PaddleOCR → EasyOCR(ko+en)
+  -1. 속도 2–3배 향상, 정확도 차이 미미
+  -2. 한자 인식률은 두 엔진 모두 저조(원인 분석 중)
+- 전처리 파이프라인 구성(오픈웨이트 사용, 비파인튜닝):
+  -1. Layout Detection: MS DiT (텍스트/타이틀/리스트/테이블/그림)
+  -2. Table → Markdown: table detection(hf 모델) + img2table
+  -3. 수식 → LaTeX: Pix2Text(검출) + RapidLaTeXOCR
+  -4. 띄어쓰기 보정: PyKoSpacing
+- 한계/이슈:
+  -1. DiT: 논문형(two-column) 강점, 일반 문서/3컬럼 이상/각주·캡션 분리 취약, 레이아웃 순서 무작위
+  -2. Table: 복잡 테이블/다중 테이블에서 검출·추출 불완전
+  -3. 수식 검출: 논문 외(예: 수능형) 탐지 어려움, 해상도에 따라 LaTeX 품질 변동
+- 개선: RAGFlow의 Deep Document Understanding 중 Layout Detection을 모듈화하여 대체 실험
+  -1. 논문 외 포맷에서 DiT 대비 세분화/성능 개선 확인(단, 멀티 테이블 누락·중복 분류·Figure 과다/박싱 헐거움 등 제약 존재)
+- API(작업자 크롭 가정): FastAPI + Pydantic, JSON 반환
+  -1. EasyOCR API, Math API(LaTeX OCR), Table API(img2table)
