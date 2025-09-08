@@ -131,7 +131,14 @@ High-quality Data & Human-powered Dataset Research
  Language filtering, domain-specific selection, deduplication 등 사전학습 데이터 선택 과정을 체계적으로 정리.
  Pretraining, Instruction-tuning, Preference fine-tuning 등 다양한 학습 단계별 데이터 선택 전략 분석.
 -----------------------------------------------------------------------------------------------------------
-Multi-Agent GroupChat Framework for Synthetic Dialog Data (Aug 2024)
+LLM 기반 자동 QA 생성·요약·재작성 파이프라인 구축(2024년 7월)
+- AutoGen + LangGraph + Agent Orchestration 기반 파이프라인 설계 및 구현
+- 페르소나 Prompt 자동 생성 (QA/요약/재작성/피드백 전문가) 및 Task 분석에 따른 동적 에이전트 선택
+- 멀티 테스크: 세부 쿼리 분석 → 적절한 에이전트 자동 매칭 및 결과 생성
+- 싱글 테스크: 단일 에이전트 기반으로 직접 실행
+- QA, 요약문, 보고서 재작성까지 End-to-End 자동 처리 성공
+-----------------------------------------------------------------------------------------------------------
+Multi-Agent GroupChat Framework for Synthetic Dialog Data (2024 8월)
 - Microsoft Autogen 기반으로 GroupChat 데이터 생성 프레임워크 설계·구현; GroupChat Manager + persona-defined LLM Agents로 전문가 대화 스타일 자동화.
 - 페르소나 자동 생성(position list → system prompt/description 자동 생성) 및 Agent orchestration 커스터마이징, 저장/재현을 위한 JSON 라이브러리 포맷 정의.
 - Autogen 기본 한계를 보완: 대화 로그 후킹(log_message), 세션별 메시지 영속화, 최소 한 항목(이메일/전화/일정) 포함 품질 제약 검증 로직 추가.
