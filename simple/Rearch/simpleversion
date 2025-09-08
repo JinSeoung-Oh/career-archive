@@ -116,6 +116,21 @@ Stable Diffusion with Korean (Helsinki-NLP/opus-mt-ko-en + SD + Image Variations
 - 한국어 → 영어 연결 파이프라인 검증 완료.
 - 일부 프롬프트(korean, Asian 등)에서 결과 품질 저하 문제 발견 → 개선 필요.
 -----------------------------------------------------------------------------------------------------------
+GraphRAG with LlamaIndex (2023.12)
+- 스택: LlamaIndex + NebulaGraphDB(또는 Neo4j) + OpenAI, 선택지로 LlamaCPP(GGUF)
+- 역할: GraphRAG 파이프라인 설계·구현(엔드투엔드)
+  -1. NebulaGraph 스키마/인덱스 초기화, 데이터 전처리(청크), GPT-3.5 기반 한글 트리플릿 추출 모듈 작성
+  -2. KnowledgeGraphIndex + NebulaGraphStore로 그래프 구축/업서트, KG RAG Retriever 세팅
+  -3. RetrieverQueryEngine 템플릿을 시스템 프롬프트에 주입해 키워드 추출-그래프 질의 연동
+  -4. 수학 기호(+, -, =, /) 검색 시 LLM 미매칭 → EQUAL/MINUS/PLUS… 치환 규칙 적용
+  -5. 주피터 기반 PyVis 시각화(example.html)
+- 성과/안정화:
+  -1. 한국어 텍스트에서 트리플릿 추출 파이프라인 동작 검증(요약→추출 경로 포함)
+  -2. KG 기반 키워드-관계 탐색(RAG) 응답 생성 및 후처리(자연문 연결) 흐름 정립
+- 한계/이슈(관찰):
+   -1. 단순 트리플릿 그래프의 표현력 한계(중요 정보 누락/의미 유사 트리플릿 간 충돌)
+   -2. 쿼리 모호 시 검색 실패 증가(유저 쿼리 분석의 중요성 파악)
+-----------------------------------------------------------------------------------------------------------
 Red-teaming Guide & Red-teaming LLM Development
 기간: 2024년 3~5월
 - LLM 보안 검증을 위한 Red-teaming 기본 가이드라인 작성 (Adversarial prompting 기법, jailbreak 시나리오 등).
