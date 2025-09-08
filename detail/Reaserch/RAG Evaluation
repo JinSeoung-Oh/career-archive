@@ -1,0 +1,50 @@
+프로젝트명: RAG Evaluation
+업데이트: 2024-08-19
+
+1) 개요
+   - 목표: 일반적으로 쓰이는 RAG 평가지표들을 한 자리에 모아 RAG 파이프라인을 일관된 기준으로 자동 평가.
+   - 산출물: 지표 세트 + 실행 스크립트(rag_eval/main.py) + 커스텀 리포팅(특히 정답성 근거).
+
+2) 평가 지표 세트
+   (1) 정답/유사도 계열
+       -1. RAGAS
+           -1) answer_similarity: 코사인 유사도 기반(정규화된 임베딩), Prompt/Response/Context/Ground Truth/Model 입력.
+           -2) answer_correctness_eval(커스텀): RAGAS answer_correctness 기반으로 TP/FP/FN 추출 + F1 및 각 항목 사유 출력.
+               - TP: GT와 생성답 둘 다에 존재
+               - FP: 생성답에만 존재
+               - FN: GT에만 존재
+   (2) 관련성/충실성/환각
+       -1. DeepEval
+           -1) AnswerRelevancyMetric: 생성 답변을 sub-part로 분해 → 각 파트가 질문과 연관되는지 판정(기본 threshold=0.7, 이유 포함).
+           -2) FaithfulnessMetric: Retrieved context가 옳다는 가정 아래, 답변의 사실 충실성 평가.
+           -3) HallucinationMetric: 실제 사용된(ground truth) 컨텍스트 대비 환각 여부 평가.
+   (3) Retrieval 품질
+       -1. ContextualPrecisionMetric: Retrieved 문서 단위 근거가 정답 도달에 기여했는지 판정(예/아니오+사유).
+       -2. ContextualRecallMetric: GT를 sub-요소로 분해 후 Retrieved 문서만으로 GT를 재구성 가능한지 측정.
+       -3. ContextualRelevancyMetric: 질문과 검색 문서의 연관성 평가.
+   (4) 요약/회상/안전성/일반 판정
+       -1. summary_eval(커스텀): 요약 태스크 평가(assessment 질문 미지정 시 자동 생성).
+       -2. KnowledgeRetentionMetric: 멀티턴 대화에서 이전 턴 기억 여부 평가(messages=[[input, actual_output], ...]).
+       -3. ToxicityMetric, BiasMetric: 독성/편향 측정.
+       -4. GEval: 기준(혹은 단계적 평가 지시) 기반 범용 판정. (추후 구현 재점검 항목으로 명시)
+   미추가(후보): DeepEval conversation_completeness, conversation_relevancy
+   RAGAS(문서 미기재 함수): Context_entities_recall, Critique, rubrics_based(루브릭/피드백 기반 점수)
+
+3) 구현/사용
+   -1. 실행 파일: rag_eval/main.py (터미널 기반 CLI로 동작)
+   -2. 필요 파라미터 예:
+       -1) answer_similarity: prompt, LLM_response, context, expected_answer, model
+       -2) answer_correctness: 상동 + TP/FP/FN 이유 커스텀 출력
+       -3) answer_relevancy: prompt, LLM_response, model, threshold=0.7, include_reason=True
+       -4) contextual_*: prompt, LLM_response, expected_answer, retrieval_context, model
+       -5) faithfulness: prompt, LLM_response, retrieval_context, model
+       -6) hallucination: prompt, LLM_response, context(ground truth)
+       -7) knowledge_retention: messages, model
+       -8) toxicity/bias/g_eval: 문서대로 전달 파라미터 지정
+    주의: 현 버전은 CLI 중심이라 API·사용 방식에 맞춘 코드 재작성 필요(명시됨).
+
+4) 인사이트 (주어진 내용 기반 요약)
+   - 정답·관련·Retrieval을 분리해 보면, 어디서 성능이 떨어지는지(검색/독해/생성) 원인 진단이 쉬워짐.
+   - 근거 노출이 핵심: 정답성(F1)만 보지 않고 TP/FP/FN 사유를 함께 남기면 **실제 개선 행동(데이터 정제·retriever 튜닝·프롬프트 수정)**으로 빠르게 연결됨.
+   - 요약·회상·안전성 포함: RAG의 최종 사용자 품질은 정답률만이 아니라 요약 품질, 대화 맥락 유지, 안전성까지 묶어 봐야 실사용 가치를 판단 가능.
+   - 운영 편의성과 재현성: threshold 고정(예: 0.7)·출력 포맷 고정으로 평가 일관성 확보.
